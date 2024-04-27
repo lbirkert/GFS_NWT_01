@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"
+    integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js"
+    integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz"
+    crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+  <link href="/src/style.css" rel="stylesheet">
+  <title>GFS_NWT_01 1.1. Messwert-Zeit Systeme</title>
+</head>
+
+<body>
+  <main>
+    <h1>1.1. Messwert-Zeit Systeme</h1>
+    <p>&copy; Lucas Birkert 2024</p>
+
+    <hr />
+
+    <p class="text">
+      Ein Messwert-Zeit System ordnet einem diskreten Zeitpunkt \(t_k\) einen
+      diskreten Messwert \(x_k\) zu. Ein Messwert-Zeit hat eine begrenzte Anzahl \(n\)
+      an Messwerten, welche im Normalfall mit dem gleichem Zeitintervall \(\delta\) ermessen werden: \(t_k = k *
+      \delta\)
+    </p>
+
+    <hr />
+
+    <p class="text">
+      Die Steigung an einem Zeitpunkt \(t_k\) ist durch den Differenzenquotienten mit dem Zeitintervall \(\delta\)
+      definiert:
+      \(\dot{x_k} = \frac{x_k - x_{k-1}}{\delta}\)
+    </p>
+
+    <hr />
+
+    <div class="btns">
+      <p>Load Dataset</p>
+      <button onclick="show(this, 0)" class="active">A</button>
+      <button onclick="show(this, 1)">B</button>
+      <button onclick="show(this, 2)">C</button>
+      <button onclick="show(this, 3)">D</button>
+    </div>
+    <div style="position: relative; aspect-ratio: 2; flex: 1; width: 100%; display: flex; justify-content: center;">
+      <canvas id="data"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/src/data.js"></script>
+    <script>
+      function show(el, i) {
+        for (btn of document.querySelectorAll("button")) {
+          btn.className = "";
+        }
+
+        el.className = "active";
+
+        load(i);
+      }
+
+      let chart;
+      function load(i) {
+        if (chart) chart.destroy();
+        chart = new Chart(data, {
+          type: 'line',
+          data: {
+            labels: new Array(100).fill(0).map((_, i) => i),
+            datasets: [{
+              label: "Messwert",
+              data: dataset[i],
+              borderWidth: 1
+            },
+            {
+              label: "Steigung",
+              data: deriv(dataset[i]),
+              borderWidth: 1
+            }]
+          },
+        });
+      }
+
+      function deriv(d) {
+        const peek = Math.max(...d);
+        return d.map((v, i) => i == 0 ? undefined : (v - d[i - 1]) * peek);
+      }
+
+      load(0);
+    </script>
+  </main>
+</body>
+
+</html>

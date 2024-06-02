@@ -18,39 +18,32 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js"
     integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
     onload="renderMathInElement(document.body);"></script>
-  <title>GFS_NWT_01 1.1. Messwert-Zeit Systeme</title>
+  <title>GFS_NWT_01 2.1.3. Clamp</title>
 </head>
 
 <body>
   <main>
     <div class="head">
-      <h1>1.1. Messwert-Zeit Systeme</h1>
+      <h1>2.1.4. Clamp</h1>
       <p>
-        <a href="..">&lt; Zurück</a> -
-        <a href="../02/01/01.html">Weiter &gt;</a>
+        <a href="03.html">&lt; Zurück</a> -
+        <a href="05.html">Weiter &gt;</a>
       </p>
     </div>
     <p>&copy; Lucas Birkert 2024</p>
 
     <hr />
 
-    <p class="text">
-      Ein Messwert-Zeit System ordnet einem diskreten Zeitpunkt \(t_k\) einen
-      diskreten Messwert \(x_k\) zu. Ein Messwert-Zeit hat eine begrenzte Anzahl \(n\)
-      an Messwerten, welche im Normalfall mit dem gleichem Zeitintervall \(\delta\) ermessen werden: \(t_k = k *
-      \delta\)
-    </p>
+    <p>\(y_k = clamp(x_k, v_{min}, v_{max}) = min(max(x_k, v_{min}), v_{max})\)</p>
 
     <hr />
 
-    <p class="text">
-      Die Steigung an einem Zeitpunkt \(t_k\) ist durch den Differenzenquotienten mit dem Zeitintervall \(\delta\)
-      definiert:
-      \(\dot{x_k} = \frac{x_k - x_{k-1}}{\delta}\)
-    </p>
+    <p>Die Clamp-Funktion legt einen <strong>Minimalwert und Maximalwert</strong> fest.</p>
 
     <hr />
 
+    <input id="inp_min" type="range" min="0" max="1000" value="250">
+    <input id="inp_max" type="range" min="0" max="1000" value="750">
     <div class="btns">
       <p>Load Dataset</p>
       <button onclick="show(this, 0)" class="active">A</button>
@@ -65,7 +58,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../src/data.js"></script>
     <script>
+      let slider_min = 0.25;
+      let slider_max = 0.75;
       let curr = 0;
+      inp_min.oninput = () => (slider_min = parseInt(inp_min.value) / 1000, update("none"));
+      inp_max.oninput = () => (slider_max = parseInt(inp_max.value) / 1000, update("none"));
 
       function show(el, i) {
         for (btn of document.querySelectorAll("button")) {
@@ -79,13 +76,17 @@
       }
 
       function update(s) {
+        const [trans, val_min, val_max] = transform(dataset[curr]);
         chart.data.datasets[0].data = dataset[curr];
-        chart.data.datasets[1].data = deriv(dataset[curr]);
+        chart.data.datasets[1].data = trans;
+        chart.data.datasets[2].data = new Array(100).fill(val_min);
+        chart.data.datasets[3].data = new Array(100).fill(val_max);
         chart.update(s);
       }
 
       let chart;
       function load() {
+        const [trans, val_min, val_max] = transform(dataset[curr]);
         chart = new Chart(data, {
           type: 'line',
           data: {
@@ -97,10 +98,22 @@
               order: 2
             },
             {
-              label: "Steigung",
-              data: deriv(dataset[curr]),
-              borderWidth: 2,
+              label: "Transformation",
+              data: trans,
+              borderWidth: 5,
               order: 0,
+            },
+            {
+              label: "Min Value",
+              data: new Array(100).fill(val_min),
+              borderWidth: 3,
+              order: 1,
+            },
+            {
+              label: "Max Value",
+              data: new Array(100).fill(val_max),
+              borderWidth: 3,
+              order: 1,
             }],
           },
           options: {
@@ -113,9 +126,12 @@
         });
       }
 
-      function deriv(d) {
+      function transform(d) {
         const max = Math.max(...d);
-        return d.map((v, i) => i == 0 ? undefined : (v - d[i - 1]) * max);
+        const min = Math.min(...d);
+        const val_min = min + (max - min) * slider_min;
+        const val_max = min + (max - min) * slider_max;
+        return [d.map((v) => Math.min(Math.max(v, val_min), val_max)), val_min, val_max];
       }
 
       load();

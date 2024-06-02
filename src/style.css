@@ -53,6 +53,11 @@ button.active {
   padding: 0 5px; 
 }
 
+.head {
+  display: flex;
+  justify-content: space-between;
+}
+
 hr {
   margin: 40px 0;
   border: 1px solid #eee;

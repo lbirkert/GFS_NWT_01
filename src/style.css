@@ -67,7 +67,15 @@ main {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  margin: auto;
   padding: 40px;
+}
+
+@media(min-width: 900px) {
+  main {
+    width: 50%;
+    min-width: 900px;
+  }
 }
 
 .text {
